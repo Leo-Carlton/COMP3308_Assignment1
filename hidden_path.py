@@ -1,7 +1,20 @@
 import sys
+from map_parser import create_map_matrix
+from BFS import runBFS
+
+
 
 def main(strategy, filename):
-    # TODO
+    ## Make the map first
+    map_layout, start_position, goal_position = create_map_matrix(filename)
+
+    ## add all strategies
+    if strategy == "B":
+        runBFS(map_layout, start_position, goal_position)
+    elif strategy == "D":
+        runDFS(map_layout, start_position, goal_position)
+    elif strategy == "U":
+        runUCS(map_layout, start_position, goal_position)
     return
 
 if __name__ == '__main__':   
