@@ -6,15 +6,15 @@ from BFS import runBFS
 
 def main(strategy, filename):
     ## Make the map first
-    map_layout, start_position, goal_position = create_map_matrix(filename)
+    map_layout, start_position, goal_position, teleports = create_map_matrix(filename)
 
     ## add all strategies
     if strategy == "B":
-        runBFS(map_layout, start_position, goal_position)
+        runBFS(map_layout, start_position, goal_position, teleports)
     elif strategy == "D":
-        runDFS(map_layout, start_position, goal_position)
+        runDFS(map_layout, start_position, goal_position, teleports)
     elif strategy == "U":
-        runUCS(map_layout, start_position, goal_position)
+        runUCS(map_layout, start_position, goal_position, teleports)
     return
 
 if __name__ == '__main__':   

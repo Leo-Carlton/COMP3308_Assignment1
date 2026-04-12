@@ -5,4 +5,10 @@ tile_types = {
     'M': {'passable': True,  'cost': 2},
     'B': {'passable': True,  'cost': 3},
     'S': {'passable': True,  'cost': 1},
+    
 }
+
+def handle_teleports(tile):
+    if tile.isdigit():
+        return {'passable': True, 'cost': 1}
+    return tile_types[tile]
