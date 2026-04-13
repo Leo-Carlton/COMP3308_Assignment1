@@ -32,56 +32,53 @@ def expand_node(current_node, matrix, fringe, expanded, teleports, goal_position
     expanded.append(current_node)
 
     expanded_positions = [n.position for n in expanded]
-    fringe_dict = {n.position: (f, n) for f, _, _, _, n in fringe}
+    fringe_positions = [n.position for _, _, _, _, n in fringe]
 
-    # If current node is a teleport entrance, only add exit as neighbour
+    h_current = heuristic(current_node.position, goal_position, teleports)
+
+    # If current node is a teleport entrance, only add exit if strictly better
     if current_node.position in teleports:
         exit_position = teleports[current_node.position]
-        if exit_position not in expanded_positions and exit_position not in fringe_dict:
+        if exit_position not in expanded_positions and exit_position not in fringe_positions:
             col, row = exit_position
             tile = matrix[row][col]
-            new_cost = current_node.path_cost  # 0 Willpower to teleport
-            h = heuristic(exit_position, goal_position, teleports)
-            f = new_cost + h
-            counter += 1
-            child_node = Node(
-                position=exit_position,
-                tile_type=tile,
-                parent=current_node,
-                path_cost=new_cost
-            )
-            heapq.heappush(fringe, (f, exit_position[0], exit_position[1], counter, child_node))
+            new_cost = current_node.path_cost
+            h_exit = heuristic(exit_position, goal_position, teleports)
+
+            if h_exit < h_current:
+                counter += 1
+                child_node = Node(
+                    position=exit_position,
+                    tile_type=tile,
+                    parent=current_node,
+                    path_cost=new_cost
+                )
+                fringe.clear()
+                heapq.heappush(fringe, (h_exit, exit_position[0], exit_position[1], counter, child_node))
         return counter
 
     # Otherwise expand normally
     neighbours = get_neighbours(matrix, current_node.position)
 
+    best = []
     for position in neighbours:
         col, row = position
         tile = matrix[row][col]
 
-        if position in expanded_positions:
+        if position in expanded_positions or position in fringe_positions:
             continue
 
         new_cost = current_node.path_cost + handle_teleports(tile)['cost']
         h = heuristic(position, goal_position, teleports)
-        f = new_cost + h  # f(n) = g(n) + h(n)
+        best.append((h, position[0], position[1], new_cost, tile, position))
 
-        if position in fringe_dict:
-            existing_f, _ = fringe_dict[position]
-            if f < existing_f:
-                # Remove old entry and push updated one
-                fringe[:] = [entry for entry in fringe if entry[4].position != position]
-                heapq.heapify(fringe)
-                counter += 1
-                child_node = Node(
-                    position=position,
-                    tile_type=tile,
-                    parent=current_node,
-                    path_cost=new_cost
-                )
-                heapq.heappush(fringe, (f, position[0], position[1], counter, child_node))
-        else:
+    if best:
+        best.sort(key=lambda x: (x[0], x[1], x[2]))
+        h_best = best[0][0]
+
+        # Only move if best neighbour is strictly better than current
+        if h_best < h_current:
+            h, _, _, new_cost, tile, position = best[0]
             counter += 1
             child_node = Node(
                 position=position,
@@ -89,7 +86,8 @@ def expand_node(current_node, matrix, fringe, expanded, teleports, goal_position
                 parent=current_node,
                 path_cost=new_cost
             )
-            heapq.heappush(fringe, (f, position[0], position[1], counter, child_node))
+            fringe.clear()
+            heapq.heappush(fringe, (h, position[0], position[1], counter, child_node))
 
     return counter
 
@@ -101,17 +99,16 @@ def reconstruct_path(goal_node):
         node = node.parent
     return list(reversed(path))
 
-def runAstar(matrix, start_position, goal_position, teleports):
+def runHC(matrix, start_position, goal_position, teleports):
     fringe = []
     expanded = []
     counter = 0
 
-    print("A* Search Initiated")
-    print("Expanded: ", end="")
+    print("Hill Climbing Search Initiated")
+    print("Expanded:", end="")
     start_node = create_start_node(matrix, start_position)
     h = heuristic(start_position, goal_position, teleports)
-    f = 0 + h  # g=0 at start
-    heapq.heappush(fringe, (f, start_position[0], start_position[1], counter, start_node))
+    heapq.heappush(fringe, (h, start_position[0], start_position[1], counter, start_node))
 
     while fringe:
         _, _, _, _, current_node = heapq.heappop(fringe)
@@ -125,6 +122,7 @@ def runAstar(matrix, start_position, goal_position, teleports):
             print(f"Path Found: {path}")
             print(f"Taking this path will cost: {current_node.path_cost} Willpower")
             return path
+
     print("")
-    print("NO PATH FOUND!")
+    print("No path found")
     return None

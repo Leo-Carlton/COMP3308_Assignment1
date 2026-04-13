@@ -5,8 +5,7 @@ from DFS import runDFS
 from UCS import runUCS
 from Greedy import runGreedy
 from Astar import runAstar
-
-
+from HillClimb import runHC
 
 def main(strategy, filename):
     ## Make the map first
@@ -24,7 +23,7 @@ def main(strategy, filename):
     elif strategy == "A":
         runAstar(map_layout, start_position, goal_position, teleports)
     else:
-        runHill(map_layout, start_position, goal_position, teleports)
+        runHC(map_layout, start_position, goal_position, teleports)
     return
 
 if __name__ == '__main__':   
