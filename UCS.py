@@ -99,7 +99,7 @@ def runUCS(matrix, start_position, goal_position, teleports):
     counter = 0
 
     print("UCS Search Initiated")
-    print("Expanded:", end="")
+    print("Expanded: ", end="")
     start_node = create_start_node(matrix, start_position)
     heapq.heappush(fringe, (0, start_position[0], start_position[1], counter, start_node))
 
@@ -115,6 +115,6 @@ def runUCS(matrix, start_position, goal_position, teleports):
             print(f"Path Found: {path}")
             print(f"Taking this path will cost: {current_node.path_cost} Willpower")
             return path
-
-    print("No path found")
+    print("")
+    print("NO PATH FOUND!")
     return None

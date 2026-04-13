@@ -80,7 +80,7 @@ def runBFS(matrix, start_position, goal_position, teleports):
     expanded = []
 
     print("BFS Search Initiated")
-    print("Expanded:", end="")
+    print("Expanded: ", end="")
     start_node = create_start_node(matrix, start_position)
     fringe.append(start_node)
 
@@ -97,7 +97,8 @@ def runBFS(matrix, start_position, goal_position, teleports):
             print(f"Taking this path will cost: {current_node.path_cost} Willpower")
             return path
 
-    print("No path found")
+    print("")
+    print("NO PATH FOUND!")
     return None
 
 

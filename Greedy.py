@@ -90,7 +90,7 @@ def runGreedy(matrix, start_position, goal_position, teleports):
     counter = 0
 
     print("Greedy Search Initiated")
-    print("Expanded:", end="")
+    print("Expanded: ", end="")
     start_node = create_start_node(matrix, start_position)
     h = heuristic(start_position, goal_position, teleports)
     heapq.heappush(fringe, (h, start_position[0], start_position[1], counter, start_node))

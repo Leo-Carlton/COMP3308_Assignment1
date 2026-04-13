@@ -8,7 +8,9 @@ tile_types = {
     
 }
 
+## THis handles teleports for the neighbours function
 def handle_teleports(tile):
     if tile.isdigit():
         return {'passable': True, 'cost': 1}
+    ## if tile isn't a teleport, it returns the regular tile_type anyways
     return tile_types[tile]
