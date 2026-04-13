@@ -1,6 +1,10 @@
 import sys
 from map_parser import create_map_matrix
 from BFS import runBFS
+from DFS import runDFS
+from UCS import runUCS
+from Greedy import runGreedy
+from Astar import runAstar
 
 
 
@@ -15,6 +19,12 @@ def main(strategy, filename):
         runDFS(map_layout, start_position, goal_position, teleports)
     elif strategy == "U":
         runUCS(map_layout, start_position, goal_position, teleports)
+    elif strategy == "G":
+        runGreedy(map_layout, start_position, goal_position, teleports)
+    elif strategy == "A":
+        runAstar(map_layout, start_position, goal_position, teleports)
+    else:
+        runHill(map_layout, start_position, goal_position, teleports)
     return
 
 if __name__ == '__main__':   

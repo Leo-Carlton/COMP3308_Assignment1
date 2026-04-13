@@ -1,11 +1,10 @@
 from node_class import Node
-from collections import deque
+import heapq
 from tile_rules import tile_types
 from tile_rules import handle_teleports
 
-
 def create_start_node(matrix, node_start_location):
-    col, row = node_start_location 
+    col, row = node_start_location
     start_node = Node(
         position=node_start_location,
         tile_type=matrix[row][col],
@@ -14,10 +13,9 @@ def create_start_node(matrix, node_start_location):
     )
     return start_node
 
-
 def get_neighbours(matrix, position):
     col, row = position
-    directions = [ (-1, 0), (1, 0), (0, -1), (0, 1),] ## Left Right Up Down specific to task
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Left Right Up Down
     neighbours = []
     for dc, dr in directions:
         new_col, new_row = col + dc, row + dr
@@ -27,44 +25,65 @@ def get_neighbours(matrix, position):
                 neighbours.append((new_col, new_row))
     return neighbours
 
-
-def expand_node(current_node, matrix, fringe, expanded, teleports):
+def expand_node(current_node, matrix, fringe, expanded, teleports, counter):
     expanded.append(current_node)
 
-    fringe_positions = [n.position for n in fringe]
     expanded_positions = [n.position for n in expanded]
+    fringe_dict = {n.position: (cost, n) for cost, _, _, _, n in fringe}
 
     # If current node is a teleport entrance, only add exit as neighbour
     if current_node.position in teleports:
         exit_position = teleports[current_node.position]
-        if exit_position not in expanded_positions and exit_position not in fringe_positions:
+        if exit_position not in expanded_positions and exit_position not in fringe_dict:
             col, row = exit_position
             tile = matrix[row][col]
+            new_cost = current_node.path_cost  # 0 Willpower to teleport
+            counter += 1
             child_node = Node(
                 position=exit_position,
                 tile_type=tile,
                 parent=current_node,
-                path_cost=current_node.path_cost  # 0 Willpower to teleport
+                path_cost=new_cost
             )
-            fringe.append(child_node)
-        return
+            heapq.heappush(fringe, (new_cost, exit_position[0], exit_position[1], counter, child_node))
+        return counter
 
     # Otherwise expand normally
     neighbours = get_neighbours(matrix, current_node.position)
 
     for position in neighbours:
         col, row = position
-        if position not in expanded_positions and position not in fringe_positions:
-            tile = matrix[row][col]
+        tile = matrix[row][col]
+
+        if position in expanded_positions:
+            continue
+
+        new_cost = current_node.path_cost + handle_teleports(tile)['cost']
+
+        if position in fringe_dict:
+            existing_cost, _ = fringe_dict[position]
+            if new_cost < existing_cost:
+                fringe[:] = [entry for entry in fringe if entry[4].position != position]
+                heapq.heapify(fringe)
+                counter += 1
+                child_node = Node(
+                    position=position,
+                    tile_type=tile,
+                    parent=current_node,
+                    path_cost=new_cost
+                )
+                heapq.heappush(fringe, (new_cost, position[0], position[1], counter, child_node))
+        else:
+            counter += 1
             child_node = Node(
                 position=position,
                 tile_type=tile,
                 parent=current_node,
-                path_cost=current_node.path_cost + handle_teleports(tile)['cost']
+                path_cost=new_cost
             )
-            fringe.append(child_node)
-            fringe_positions.append(position) # keeps fringe_position up to date within loop
+            heapq.heappush(fringe, (new_cost, position[0], position[1], counter, child_node))
 
+    return counter
 
 def reconstruct_path(goal_node):
     path = []
@@ -74,21 +93,21 @@ def reconstruct_path(goal_node):
         node = node.parent
     return list(reversed(path))
 
-
-def runBFS(matrix, start_position, goal_position, teleports):
-    fringe = deque()
+def runUCS(matrix, start_position, goal_position, teleports):
+    fringe = []
     expanded = []
+    counter = 0
 
-    print("BFS Search Initiated")
+    print("UCS Search Initiated")
     print("Expanded:", end="")
     start_node = create_start_node(matrix, start_position)
-    fringe.append(start_node)
+    heapq.heappush(fringe, (0, start_position[0], start_position[1], counter, start_node))
 
     while fringe:
-        current_node = fringe.popleft()
+        _, _, _, _, current_node = heapq.heappop(fringe)
 
         print(f"{current_node.position}", end="")
-        expand_node(current_node, matrix, fringe, expanded, teleports)
+        counter = expand_node(current_node, matrix, fringe, expanded, teleports, counter)
 
         if current_node.position == goal_position:
             path = reconstruct_path(current_node)
@@ -99,6 +118,3 @@ def runBFS(matrix, start_position, goal_position, teleports):
 
     print("No path found")
     return None
-
-
-    

@@ -4,3 +4,6 @@ class Node:
         self.tile_type = tile_type    # 'normal', 'mud', 'boulder', 'teleport', etc.
         self.parent = parent          # parent Node, for path reconstruction
         self.path_cost = path_cost    # cumulative Willpower cost from start
+
+    def __lt__(self, other):
+        return self.path_cost < other.path_cost # For cost comparisons

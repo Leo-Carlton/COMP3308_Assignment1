@@ -1,11 +1,9 @@
 from node_class import Node
-from collections import deque
 from tile_rules import tile_types
 from tile_rules import handle_teleports
 
-
 def create_start_node(matrix, node_start_location):
-    col, row = node_start_location 
+    col, row = node_start_location
     start_node = Node(
         position=node_start_location,
         tile_type=matrix[row][col],
@@ -14,10 +12,9 @@ def create_start_node(matrix, node_start_location):
     )
     return start_node
 
-
 def get_neighbours(matrix, position):
-    col, row = position
-    directions = [ (-1, 0), (1, 0), (0, -1), (0, 1),] ## Left Right Up Down specific to task
+    col, row = position 
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] # D, U, R, L 
     neighbours = []
     for dc, dr in directions:
         new_col, new_row = col + dc, row + dr
@@ -26,7 +23,6 @@ def get_neighbours(matrix, position):
             if handle_teleports(tile)['passable']:
                 neighbours.append((new_col, new_row))
     return neighbours
-
 
 def expand_node(current_node, matrix, fringe, expanded, teleports):
     expanded.append(current_node)
@@ -63,9 +59,8 @@ def expand_node(current_node, matrix, fringe, expanded, teleports):
                 path_cost=current_node.path_cost + handle_teleports(tile)['cost']
             )
             fringe.append(child_node)
-            fringe_positions.append(position) # keeps fringe_position up to date within loop
-
-
+            fringe_positions.append(position)
+            
 def reconstruct_path(goal_node):
     path = []
     node = goal_node
@@ -74,31 +69,27 @@ def reconstruct_path(goal_node):
         node = node.parent
     return list(reversed(path))
 
-
-def runBFS(matrix, start_position, goal_position, teleports):
-    fringe = deque()
+def runDFS(matrix, start_position, goal_position, teleports):
+    fringe = [] # List instead of deque (BFS)
     expanded = []
 
-    print("BFS Search Initiated")
+    print("DFS Search Initiated")
     print("Expanded:", end="")
     start_node = create_start_node(matrix, start_position)
     fringe.append(start_node)
 
     while fringe:
-        current_node = fringe.popleft()
+        current_node = fringe.pop() # Follows LIFO to pop from end 
 
         print(f"{current_node.position}", end="")
         expand_node(current_node, matrix, fringe, expanded, teleports)
 
-        if current_node.position == goal_position:
+        if current_node.position == goal_position: 
             path = reconstruct_path(current_node)
             print("")
             print(f"Path Found: {path}")
             print(f"Taking this path will cost: {current_node.path_cost} Willpower")
-            return path
-
+            return path 
+        
     print("No path found")
     return None
-
-
-    
