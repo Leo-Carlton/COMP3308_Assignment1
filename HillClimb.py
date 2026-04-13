@@ -104,8 +104,8 @@ def runHC(matrix, start_position, goal_position, teleports):
     expanded = []
     counter = 0
 
-    print("Hill Climbing Search Initiated")
-    print("Expanded:", end="")
+    print("Hill-climbing Search Initiated")
+    print("Expanded: ", end="")
     start_node = create_start_node(matrix, start_position)
     h = heuristic(start_position, goal_position, teleports)
     heapq.heappush(fringe, (h, start_position[0], start_position[1], counter, start_node))
@@ -124,5 +124,5 @@ def runHC(matrix, start_position, goal_position, teleports):
             return path
 
     print("")
-    print("No path found")
+    print("NO PATH FOUND!")
     return None
